@@ -9,3 +9,6 @@ body {
   height: 100vh;
   background: #fafafa;
 }
+canvas {
+  display: block;
+}

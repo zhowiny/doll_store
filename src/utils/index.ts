@@ -1,12 +1,6 @@
-import images from './resource'
-
 class Util {
-  promises: any
-  constructor(images: Array<any>) {
-    this.setResource(images)
-  }
-  setResource(images: Array<any>) {
-    this.promises = images.map(item => {
+  async loadImage(images: Array<any>) {
+    let promises = images.map(item => {
       return new Promise((resolve: any, reject: any) => {
         const img = new Image()
         img.src = item.path
@@ -18,10 +12,8 @@ class Util {
         }
       })
     })
-  }
-  async loadImage() {
     let resources: any = {}
-    await Promise.all(this.promises).then(result => {
+    await Promise.all(promises).then(result => {
       result.forEach((r: any) => {
         resources[r.name] = r.img
       })
@@ -30,5 +22,5 @@ class Util {
   }
 }
 
-export const utils = new Util(images)
+export const utils = new Util()
 
