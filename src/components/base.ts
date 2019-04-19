@@ -3,6 +3,13 @@ declare global {
     canvas: HTMLCanvasElement
   }
 }
+interface Rect {
+  x: number
+  y: number
+  width: number
+  height: number
+  [prop: string]: any
+}
 
 export default class Base {
   canvas: HTMLCanvasElement | null = null
@@ -37,8 +44,10 @@ export default class Base {
 
   roundedRect(x: number = 0, y: number = 0, width: number, height: number, radius: number) {
     let ctx = <CanvasRenderingContext2D>this.context
+    ctx.save()
     ctx.beginPath()
     ctx.strokeStyle = '#666'
+    ctx.lineWidth = 2 * this.ratio
     ctx.moveTo(x, y + radius)
     ctx.lineTo(x, y + height - radius)
     ctx.quadraticCurveTo(x, y + height, x + radius, y + height)
@@ -55,4 +64,28 @@ export default class Base {
     }
     ctx.stroke()
   }
+
+  isContain(rect: Rect, point: { pageX: number, pageY: number }) {
+    if (!rect || !point) return false
+    const ctx = <CanvasRenderingContext2D>this.context
+    const p = {
+      x: point.pageX * this.ratio,
+      y: point.pageY * this.ratio,
+      width: rect.width,
+      height: rect.height,
+    }
+    ctx.beginPath()
+    ctx.strokeStyle = '#666'
+    ctx.lineWidth = 2 * this.ratio
+    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height)
+    ctx.strokeStyle = '#aaf'
+    ctx.arc(p.x, p.y, 50, 0, Math.PI * 2)
+    ctx.stroke()
+
+    return p.x > rect.x &&
+      p.x < rect.x + rect.width &&
+      p.y > rect.y &&
+      p.y < rect.y + rect.height
+  }
+
 }

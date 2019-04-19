@@ -20,6 +20,8 @@ export default class Background extends Base {
       height: (<HTMLCanvasElement>this.canvas).width * (this.img.height / this.img.width),
       img: img,
     }
+  }
+  draw() {
     this.drawBg()
   }
   drawBg() {
