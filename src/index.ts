@@ -5,46 +5,24 @@ import Base from './components/base'
 import Bg from './components/bg'
 import Hook from './components/hook'
 import Background from './components/bg'
+import Control from './components/control'
+import Gift from './components/gift'
 
-const STATUS = {
-  READY: 'ready',
-  START: 'start',
-  DROP: 'drop',
-  CATCH: 'catch',
-  END: 'end',
-}
 
 export default class Game extends Base {
   resource: any = {}
-  bg: Background | null = null
-  hook: Hook | null = null
-  startTime: number = 0
-  aniId: number = 0
-  point: any = null
-  status: string = STATUS.READY
+  bg: Background = this.bg
+  hook: Hook = this.hook
+  gifts: Gift[] = this.gifts
+  control: Control = this.control
+  canvas: HTMLCanvasElement = this.canvas
 
   constructor(id: string) {
     super()
-    const canvas = <HTMLCanvasElement>this.canvas
     this.createCanvas(id)
-    canvas.addEventListener('touchstart', e => {
-      if (this.status === STATUS.READY || this.status === STATUS.START) {
-        this.point = e.touches[0]
-        window.cancelAnimationFrame(this.aniId)
-        this.status = STATUS.START
-        this.render()
-      }
-    })
-    canvas.addEventListener('touchend', e => {
-      if (this.status === STATUS.READY || this.status === STATUS.START) {
-        this.stop()
-      }
-    })
   }
 
   async init() {
-
-    window.cancelAnimationFrame(this.aniId)
 
     // 加载所有图片资源
     this.resource = await utils.loadImage(images)
@@ -53,73 +31,91 @@ export default class Game extends Base {
 
     this.hook = new Hook(this.resource.people)
 
+    this.control = new Control(this.hook)
+    this.control.handleTouchstart(this.render.bind(this))
+
+    this.gifts = this.generateGift(this.hook)
+    // console.log(this.gifts)
+
     this.render()
   }
 
-  async update() {
-    console.log(this.status)
-    const hook = <Hook>this.hook
-    const canvas = <HTMLCanvasElement>this.canvas
-    const left = {
-      x: 0,
-      y: hook.y + hook.startY,
-      width: canvas.width / 3,
-      height: canvas.height / 2,
-    }
-    const right = {
-      x: canvas.width / 3 * 2,
-      y: hook.y + hook.startY,
-      width: canvas.width / 3 * 2,
-      height: canvas.height / 2,
-    }
-    const start = {
-      x: 0,
-      y: canvas.height / 4 * 3,
-      width: canvas.width,
-      height: canvas.height / 4,
-    }
-    if (this.isContain(start, this.point)) {
-      if (this.status !== STATUS.CATCH) {
-        this.status = STATUS.DROP
-        await hook.drop()
-        setTimeout(() => {
-          this.status = STATUS.CATCH
-        }, 500)
-      }
-    } else if (this.isContain(left, this.point)) {
-      hook.moveLeft()
-    } else if (this.isContain(right, this.point)) {
-      hook.moveRight()
-    }
 
-    if (this.status === STATUS.CATCH) {
-      await hook.catch()
-      this.status = STATUS.END
-    }
-    if (this.status === STATUS.END) {
-      console.log(123)
-      await hook.reset()
-      this.status = STATUS.READY
-      this.stop()
-    }
-  }
+  render(t?: number) {
+    this.clear()
+    // this.bg.draw()
+    this.gifts.forEach(item => item.draw())
+    this.hook.draw()
 
-  render() {
-    const hook = <Hook>this.hook
-    this.bg && this.bg.draw()
-    hook.draw()
-
-    if (this.status === STATUS.READY) return
-    this.update()
-
-    this.aniId = window.requestAnimationFrame(t => {
-      // if (!this.startTime) this.startTime = t
-      this.render()
+    this.control.update(t)
+    this.control.aniId = window.requestAnimationFrame(t => {
+      this.render(t)
     })
   }
 
-  stop() {
-    window.cancelAnimationFrame(this.aniId)
+  generateGift(hook: Hook) {
+    let size: number = 60 * this.ratio
+    let gifts: Gift[] = []
+    let history: Gift[] = []
+    let temp: any[] = []
+
+    history = this.loadStorage(hook)
+    if (history.length > 0) return history
+
+    let x: number = 10
+    let y: number = this.canvas.height - size
+    while (y > this.canvas.height - 210 * this.ratio) {
+      let i = (Math.floor(Math.random() * 5) + 1)
+      let g = {
+        img: this.resource['gift_' + i],
+        x,
+        y,
+        width: size,
+        height: size,
+      }
+      gifts.push(new Gift(g, hook))
+      temp.push({
+        img: 'gift_' + i,
+        x,
+        y,
+        width: size,
+        height: size,
+      })
+
+      x += size - 40
+      if (x > this.canvas.width - size) {
+        x = 10
+        y -= size - 40
+      }
+    }
+
+    this.saveStorage(temp)
+    return gifts
+  }
+
+  loadStorage(hook: Hook): Gift[] {
+    let gifts: any = []
+    let temp = JSON.parse(localStorage.getItem('gifts') || '[]')
+    temp.forEach((item: any) => {
+      gifts.push(new Gift({
+        img: this.resource[item.img],
+        x: item.x,
+        y: item.y,
+        width: item.width,
+        height: item.height,
+      }, hook))
+    })
+    return gifts
+  }
+  saveStorage(gifts: any[]) {
+    localStorage.setItem('gifts', JSON.stringify(gifts))
+  }
+
+  clear() {
+    const ctx = <CanvasRenderingContext2D>this.context
+    const canvas = <HTMLCanvasElement>this.canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    window.cancelAnimationFrame(this.control.aniId)
   }
 }
 

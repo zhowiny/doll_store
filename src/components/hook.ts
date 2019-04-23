@@ -10,13 +10,10 @@ export default class Hook extends Base {
   y: number = 0
   angle: number = 0
 
+  stop: boolean = false
+
   constructor(public img: HTMLImageElement) {
     super()
-    // this.render()
-    // this.addEvent('touchstart', (e: any) => {
-    //   console.log(e)
-    //   console.log(this)
-    // })
   }
   draw() {
     this.render()
@@ -46,12 +43,12 @@ export default class Hook extends Base {
   }
 
   moveLeft() {
-    this.x -= 3 * this.ratio
+    this.x -= 5 * this.ratio
     this.x = Math.max(0, this.x)
   }
   moveRight() {
     const canvas = <HTMLCanvasElement>this.canvas
-    this.x += 3 * this.ratio
+    this.x += 5 * this.ratio
     this.x = Math.min(this.x, canvas.width - 45 * this.ratio - this.startX)
   }
   open() {
@@ -63,27 +60,22 @@ export default class Hook extends Base {
       }
     })
   }
-  catch() {
-    return new Promise(async (resolve, reject) => {
-      this.angle -= 1
-      this.angle = Math.max(this.angle, -10)
-      if (this.angle === -10) {
-        await this.sleep(500)
-        await this.drag()
-        resolve()
-      }
-    })
+  async catch(fn?: Function) {
+    this.angle -= 1
+    this.angle = Math.max(this.angle, -10)
+    if (this.angle === -10) {
+      await this.drag()
+      fn && fn()
+    }
   }
-  drop() {
-    return new Promise(async (resolve, reject) => {
-      const canvas = <HTMLCanvasElement>this.canvas
-      this.y += 5 * this.ratio
-      this.y = Math.min(this.y, canvas.height / 4 * 3 - this.startY)
-      if (this.y === canvas.height / 4 * 3 - this.startY) {
-        await this.open()
-        resolve()
-      }
-    })
+  async drop(fn?: Function) {
+    const canvas = <HTMLCanvasElement>this.canvas
+    this.y += 5 * this.ratio
+    this.y = Math.min(this.y, canvas.height / 4 * 3 - this.startY)
+    if (this.y === canvas.height / 4 * 3 - this.startY) {
+      await this.open()
+      fn && fn()
+    }
   }
   drag() {
     return new Promise((resolve, reject) => {
@@ -95,28 +87,17 @@ export default class Hook extends Base {
     })
   }
 
-  sleep(time: number) {
-    return new Promise((resolve, reject) => {
-      setTimeout(resolve, time)
-    })
-  }
+  reset(fn?: Function) {
+    this.y -= 5 * this.ratio
+    this.y = Math.max(this.y, 0)
+    this.angle += 0.5
+    this.angle = Math.min(this.angle, 0)
+    this.x -= 3 * this.ratio
+    this.x = Math.max(0, this.x)
 
-  reset() {
-    return new Promise((resolve, reject) => {
-      // this.y -= 5 * this.ratio
-      // this.y = Math.max(this.y, 0)
-      // this.angle += 0.5
-      // this.angle = Math.min(this.angle, 0)
-      this.x -= 3 * this.ratio
-      this.x = Math.max(0, this.x)
-
-      // if (this.x === 0 && this.y === 0 && this.angle === 0) {
-      //   resolve()
-      // }
-      if (this.x === 0) {
-        resolve()
-      }
-    })
+    if (this.x === 0 && this.y === 0 && this.angle === 0) {
+      fn && fn()
+    }
   }
 
   drawPeople(position: string = 'left') {
@@ -152,13 +133,13 @@ export default class Hook extends Base {
     ctx.lineWidth = 1 * this.ratio
     ctx.translate(x, y)
     ctx.rotate(Math.PI * 2 / 360 * this.angle * -condition)
-    ctx.strokeStyle = '#666'
+    ctx.fillStyle = 'rgba(154,154,154,.9)'
     ctx.moveTo(condition * 5 * this.ratio, -1 * this.ratio)
     ctx.lineTo(condition * 35 * this.ratio, 25 * this.ratio)
     ctx.lineTo(condition * 10 * this.ratio, 75 * this.ratio)
     ctx.lineTo(condition * 27 * this.ratio, 25 * this.ratio)
     ctx.lineTo(0, 0)
-    ctx.stroke()
+    ctx.fill()
     ctx.restore()
   }
   drawLine() {

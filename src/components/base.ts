@@ -15,6 +15,14 @@ export default class Base {
   canvas: HTMLCanvasElement | null = null
   context: CanvasRenderingContext2D | null = null
   readonly ratio: number = 4
+  readonly STATUS = {
+    READY: 'ready',
+    START: 'start',
+    DROP: 'drop',
+    CATCH: 'catch',
+    END: 'end',
+    PAUSE: 'pause',
+  }
 
   constructor() {
     if (window.canvas) {
@@ -74,18 +82,30 @@ export default class Base {
       width: rect.width,
       height: rect.height,
     }
+
+
     ctx.beginPath()
     ctx.strokeStyle = '#666'
     ctx.lineWidth = 2 * this.ratio
     ctx.strokeRect(rect.x, rect.y, rect.width, rect.height)
-    ctx.strokeStyle = '#aaf'
+    ctx.strokeStyle = 'rgba(121, 121, 121, 0.4)'
     ctx.arc(p.x, p.y, 50, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.closePath()
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2)
     ctx.stroke()
 
     return p.x > rect.x &&
       p.x < rect.x + rect.width &&
       p.y > rect.y &&
       p.y < rect.y + rect.height
+  }
+
+  isCollide(A: Rect, B: Rect) {
+
+    return A.x + A.width > B.x && A.x < B.x + B.width && A.y + A.height > B.y && A.y < B.y + B.height
+
   }
 
 }
