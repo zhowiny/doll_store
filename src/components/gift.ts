@@ -26,6 +26,6 @@ export default class Gift extends Base {
       this.position.width,
       this.position.height
     )
-    this.context.closePath()
+    this.context.closePath();
   }
 }
