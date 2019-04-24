@@ -89,7 +89,7 @@ export default class Hook extends Base {
   }
 
   reset(fn?: Function) {
-    if (this.resetX() && this.resetY() && this.resetAngle()) {
+    if (this.resetAngle() && this.resetX() && this.resetY()) {
       fn && fn()
     }
   }

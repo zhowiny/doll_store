@@ -138,9 +138,9 @@ export default class Control extends Base {
 
   drag(gift: Gift) {
     gift && gift.move()
-    if (this.hook.y < 1000) {
-      this.hook.resetAngle()
-    }
+    // if (this.hook.y < 1000) {
+    //   this.hook.resetAngle()
+    // }
     this.hook.drag(() => {
       this.status = STATUS.END
       this.stop(1000)
