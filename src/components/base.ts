@@ -15,14 +15,6 @@ export default class Base {
   canvas: HTMLCanvasElement | null = null
   context: CanvasRenderingContext2D | null = null
   readonly ratio: number = 4
-  readonly STATUS = {
-    READY: 'ready',
-    START: 'start',
-    DROP: 'drop',
-    CATCH: 'catch',
-    END: 'end',
-    PAUSE: 'pause',
-  }
 
   constructor() {
     if (window.canvas) {
@@ -84,17 +76,17 @@ export default class Base {
     }
 
 
-    ctx.beginPath()
-    ctx.strokeStyle = '#666'
-    ctx.lineWidth = 2 * this.ratio
-    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height)
-    ctx.strokeStyle = 'rgba(121, 121, 121, 0.4)'
-    ctx.arc(p.x, p.y, 50, 0, Math.PI * 2)
-    ctx.stroke()
-    ctx.closePath()
-    ctx.beginPath()
-    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2)
-    ctx.stroke()
+    // ctx.beginPath()
+    // ctx.strokeStyle = '#666'
+    // ctx.lineWidth = 2 * this.ratio
+    // ctx.strokeRect(rect.x, rect.y, rect.width, rect.height)
+    // ctx.strokeStyle = 'rgba(121, 121, 121, 0.4)'
+    // ctx.arc(p.x, p.y, 50, 0, Math.PI * 2)
+    // ctx.stroke()
+    // ctx.closePath()
+    // ctx.beginPath()
+    // ctx.arc(p.x, p.y, 2, 0, Math.PI * 2)
+    // ctx.stroke()
 
     return p.x > rect.x &&
       p.x < rect.x + rect.width &&
@@ -103,8 +95,25 @@ export default class Base {
   }
 
   isCollide(A: Rect, B: Rect) {
+    // const ctx = <CanvasRenderingContext2D>this.context
+    // ctx.beginPath()
+    // ctx.strokeStyle = '#666'
+    // ctx.lineWidth = 2 * this.ratio
+    // ctx.strokeRect(A.x, A.y, A.width, A.height)
+    // ctx.strokeStyle = 'rgba(121, 121, 121, 0.4)'
+    // ctx.strokeRect(B.x, B.y, B.width, B.height)
+    // ctx.stroke()
+    // ctx.closePath()
 
     return A.x + A.width > B.x && A.x < B.x + B.width && A.y + A.height > B.y && A.y < B.y + B.height
+
+  }
+
+  calcArea(A: Rect, B: Rect) {
+    if (!this.isCollide(A, B)) return false
+    let width = Math.min(A.x + A.width, B.x + B.width) - Math.max(A.x, B.x)
+    let height = Math.min(A.y + A.height, B.y + B.height) - Math.max(A.y, B.y)
+    return (width * height) / (A.width * A.height) > 0.8
 
   }
 

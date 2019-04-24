@@ -1,5 +1,6 @@
 import Base from "./base";
 import { utils } from '../utils'
+import Gift from "./gift";
 
 export default class Hook extends Base {
   startX: number = 25 * this.ratio
@@ -51,53 +52,62 @@ export default class Hook extends Base {
     this.x += 5 * this.ratio
     this.x = Math.min(this.x, canvas.width - 45 * this.ratio - this.startX)
   }
-  open() {
-    return new Promise(async (resolve, reject) => {
-      this.angle += 1
-      this.angle = Math.min(this.angle, 30)
-      if (this.angle === 30) {
-        resolve()
-      }
-    })
+  open(fn?: Function) {
+    this.angle += 1
+    this.angle = Math.min(this.angle, 30)
+    if (this.angle === 30) {
+      fn && fn()
+    }
   }
-  async catch(fn?: Function) {
-    this.angle -= 1
+  catch(fn?: Function) {
+    this.angle -= 1.5
     this.angle = Math.max(this.angle, -10)
     if (this.angle === -10) {
-      await this.drag()
+      // this.drag(fn)
       fn && fn()
     }
   }
-  async drop(fn?: Function) {
+  drop(fn?: Function, gift?: Gift) {
     const canvas = <HTMLCanvasElement>this.canvas
+    let bound = canvas.height - this.height - this.startY + 80
+    if (gift) {
+      bound = gift.initialPosition.y + gift.initialPosition.height - this.height - this.startY + 80
+    }
     this.y += 5 * this.ratio
-    this.y = Math.min(this.y, canvas.height / 4 * 3 - this.startY)
-    if (this.y === canvas.height / 4 * 3 - this.startY) {
-      await this.open()
+    this.y = Math.min(this.y, bound)
+    if (this.y === bound) {
+      this.y = bound
       fn && fn()
     }
   }
-  drag() {
-    return new Promise((resolve, reject) => {
-      this.y -= 5 * this.ratio
-      this.y = Math.max(this.y, 0)
-      if (this.y === 0) {
-        resolve()
-      }
-    })
+  drag(fn?: Function) {
+    this.y -= 5 * this.ratio
+    this.y = Math.max(this.y, 0)
+    if (this.y === 0) {
+      fn && fn()
+    }
   }
 
   reset(fn?: Function) {
-    this.y -= 5 * this.ratio
-    this.y = Math.max(this.y, 0)
-    this.angle += 0.5
-    this.angle = Math.min(this.angle, 0)
-    this.x -= 3 * this.ratio
-    this.x = Math.max(0, this.x)
-
-    if (this.x === 0 && this.y === 0 && this.angle === 0) {
+    if (this.resetX() && this.resetY() && this.resetAngle()) {
       fn && fn()
     }
+  }
+
+  resetX() {
+    this.x -= 3 * this.ratio
+    this.x = Math.max(0, this.x)
+    return this.x === 0
+  }
+  resetY() {
+    this.y -= 5 * this.ratio
+    this.y = Math.max(this.y, 0)
+    return this.y === 0
+  }
+  resetAngle() {
+    this.angle += 0.5
+    this.angle = Math.min(this.angle, 0)
+    return this.angle === 0
   }
 
   drawPeople(position: string = 'left') {

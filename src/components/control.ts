@@ -1,5 +1,6 @@
 import Base from './base'
 import Hook from './hook';
+import Gift from './gift';
 interface Rect {
   x: number
   y: number
@@ -8,6 +9,16 @@ interface Rect {
   [prop: string]: any
 }
 
+const STATUS = {
+  READY: 'ready',
+  START: 'start',
+  DROP: 'drop',
+  OPEN: 'open',
+  CATCH: 'catch',
+  DRAG: 'drag',
+  END: 'end',
+  PAUSE: 'pause',
+}
 
 
 export default class Control extends Base {
@@ -36,24 +47,22 @@ export default class Control extends Base {
 
   aniId: number = 0
   point: any = null
-  status: string = this.STATUS.READY
-  touchstart: (() => void) | null = null
+  status: string = STATUS.READY
 
-  constructor(public hook: Hook) {
+  constructor(public hook: Hook, public gifts: Gift[]) {
     super()
     this.addEvent()
   }
 
   addEvent() {
-    const operationalState = [this.STATUS.READY, this.STATUS.START]
+    const operationalState = [STATUS.READY, STATUS.START]
     this.canvas.addEventListener('touchstart', e => {
       const point = e.touches[0]
       const effectivePoint = this.isContain(this.startBlock, point) || this.isContain(this.leftBlock, point) || this.isContain(this.rightBlock, point)
 
       if (~operationalState.indexOf(this.status) && effectivePoint) {
         this.point = point
-        this.status = this.STATUS.START
-        this.touchstart && this.touchstart()
+        this.status = STATUS.START
         this.hook.stop = false
       }
     })
@@ -68,15 +77,23 @@ export default class Control extends Base {
 
   update(t: number = 0) {
     // console.log(t)
+    let gift: Gift = this.gifts.filter(g => g.isTarget)[0]
+    this.gifts = this.gifts.filter(g => !g.isDead)
 
     if (!this.hook.stop) {
-      this.moveHook()
+      this.moveHook(gift)
       switch (this.status) {
-        case this.STATUS.CATCH:
-          this.catch()
+        case STATUS.OPEN:
+          this.open()
           break
-        case this.STATUS.END:
-          this.reset()
+        case STATUS.CATCH:
+          this.catch(gift)
+          break
+        case STATUS.DRAG:
+          this.drag(gift)
+          break
+        case STATUS.END:
+          this.reset(gift)
           break
         default:
           break
@@ -84,15 +101,10 @@ export default class Control extends Base {
     }
   }
 
-  moveHook() {
-    const STATUS = this.STATUS
+  moveHook(gift: Gift) {
     if (this.isContain(this.startBlock, this.point)) {
       if (~[STATUS.START, STATUS.DROP].indexOf(this.status)) {
-        this.status = STATUS.DROP
-        this.hook.drop(() => {
-          this.stop(1500)
-          this.status = STATUS.CATCH
-        })
+        this.drop(gift)
       }
     } else if (this.isContain(this.leftBlock, this.point)) {
       this.hook.moveLeft()
@@ -101,16 +113,44 @@ export default class Control extends Base {
     }
   }
 
-  catch() {
-    this.hook.catch(() => {
-      this.status = this.STATUS.END
-      this.stop(1500)
+  drop(gift: Gift) {
+    this.status = STATUS.DROP
+    this.hook.drop(() => {
+      this.status = STATUS.OPEN
+    }, gift)
+  }
+
+  open() {
+    this.hook.open(() => {
+      this.status = STATUS.CATCH
+      this.stop(1000)
     })
   }
 
-  reset() {
+  catch(gift: Gift) {
+    gift && gift.move()
+
+    this.hook.catch(() => {
+      this.status = STATUS.DRAG
+      this.stop(1000)
+    })
+  }
+
+  drag(gift: Gift) {
+    gift && gift.move()
+    if (this.hook.y < 1000) {
+      this.hook.resetAngle()
+    }
+    this.hook.drag(() => {
+      this.status = STATUS.END
+      this.stop(1000)
+    })
+  }
+
+  reset(gift: Gift) {
+    gift && gift.destroy()
     this.hook.reset(() => {
-      this.status = this.STATUS.READY
+      this.status = STATUS.READY
     })
   }
 
@@ -119,10 +159,6 @@ export default class Control extends Base {
     setTimeout(() => {
       this.hook.stop = false
     }, times)
-  }
-
-  handleTouchstart(fn: (...arg: []) => void) {
-    this.touchstart = fn
   }
 
 }

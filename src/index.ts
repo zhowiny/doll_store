@@ -31,21 +31,22 @@ export default class Game extends Base {
 
     this.hook = new Hook(this.resource.people)
 
-    this.control = new Control(this.hook)
-    this.control.handleTouchstart(this.render.bind(this))
-
     this.gifts = this.generateGift(this.hook)
-    // console.log(this.gifts)
+
+    this.control = new Control(this.hook, this.gifts)
+    console.log(this.gifts)
 
     this.render()
   }
 
 
   render(t?: number) {
+    this.gifts = this.gifts.filter(g => !g.isDead)
     this.clear()
-    // this.bg.draw()
+    this.bg.draw()
     this.gifts.forEach(item => item.draw())
     this.hook.draw()
+
 
     this.control.update(t)
     this.control.aniId = window.requestAnimationFrame(t => {
@@ -53,6 +54,7 @@ export default class Game extends Base {
     })
   }
 
+  // todo 有待优化
   generateGift(hook: Hook) {
     let size: number = 60 * this.ratio
     let gifts: Gift[] = []
@@ -67,6 +69,7 @@ export default class Game extends Base {
     while (y > this.canvas.height - 210 * this.ratio) {
       let i = (Math.floor(Math.random() * 5) + 1)
       let g = {
+        imgName: 'gift_' + i,
         img: this.resource['gift_' + i],
         x,
         y,
