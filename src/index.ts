@@ -34,16 +34,15 @@ export default class Game extends Base {
     this.gifts = this.generateGift(this.hook)
 
     this.control = new Control(this.hook, this.gifts)
-    console.log(this.gifts)
 
     this.render()
   }
 
 
   render(t?: number) {
-    this.gifts = this.gifts.filter(g => !g.isDead)
+    // this.gifts = this.gifts.filter(g => !g.isDead)
     this.clear()
-    this.bg.draw()
+    // this.bg.draw()
     this.gifts.forEach(item => item.draw())
     this.hook.draw()
 

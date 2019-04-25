@@ -11,6 +11,7 @@ export default class Hook extends Base {
   y: number = 0
   angle: number = 0
 
+  speed: number = 30
   stop: boolean = false
 
   constructor(public img: HTMLImageElement) {
@@ -44,18 +45,18 @@ export default class Hook extends Base {
   }
 
   moveLeft() {
-    this.x -= 5 * this.ratio
+    this.x -= this.speed
     this.x = Math.max(0, this.x)
   }
   moveRight() {
     const canvas = <HTMLCanvasElement>this.canvas
-    this.x += 5 * this.ratio
+    this.x += this.speed
     this.x = Math.min(this.x, canvas.width - 45 * this.ratio - this.startX)
   }
   open(fn?: Function) {
-    this.angle += 1
-    this.angle = Math.min(this.angle, 30)
-    if (this.angle === 30) {
+    this.angle += 0.5
+    this.angle = Math.min(this.angle, 15)
+    if (this.angle === 15) {
       fn && fn()
     }
   }
@@ -67,7 +68,7 @@ export default class Hook extends Base {
       fn && fn()
     }
   }
-  drop(fn?: Function, gift?: Gift) {
+  drop(gift?: Gift, fn?: Function) {
     const canvas = <HTMLCanvasElement>this.canvas
     let bound = canvas.height - this.height - this.startY + 80
     if (gift) {
@@ -89,7 +90,7 @@ export default class Hook extends Base {
   }
 
   reset(fn?: Function) {
-    if (this.resetAngle() && this.resetX() && this.resetY()) {
+    if (this.resetX() && this.resetY() && this.resetAngle()) {
       fn && fn()
     }
   }
@@ -105,7 +106,7 @@ export default class Hook extends Base {
     return this.y === 0
   }
   resetAngle() {
-    this.angle += 0.5
+    this.angle += 0.3
     this.angle = Math.min(this.angle, 0)
     return this.angle === 0
   }

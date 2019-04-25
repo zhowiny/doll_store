@@ -1,6 +1,7 @@
 import Base from './base'
 import Hook from './hook';
 import Gift from './gift';
+import { utils } from '../utils';
 interface Rect {
   x: number
   y: number
@@ -58,7 +59,7 @@ export default class Control extends Base {
     const operationalState = [STATUS.READY, STATUS.START]
     this.canvas.addEventListener('touchstart', e => {
       const point = e.touches[0]
-      const effectivePoint = this.isContain(this.startBlock, point) || this.isContain(this.leftBlock, point) || this.isContain(this.rightBlock, point)
+      const effectivePoint = utils.isContain(this.startBlock, point) || utils.isContain(this.leftBlock, point) || utils.isContain(this.rightBlock, point)
 
       if (~operationalState.indexOf(this.status) && effectivePoint) {
         this.point = point
@@ -77,15 +78,21 @@ export default class Control extends Base {
 
   update(t: number = 0) {
     // console.log(t)
-    let gift: Gift = this.gifts.filter(g => g.isTarget)[0]
+    const temp = this.gifts.filter(g => g.isTarget)
+    const gift: Gift = temp[temp.length - 1]
+    const collideGift = this.gifts.filter(g => g.collide).reverse()[0]
     this.gifts = this.gifts.filter(g => !g.isDead)
 
+
+    const ignoreStatus = [STATUS.DRAG, STATUS.END]
+    // console.log(gift)
+    if (~ignoreStatus.indexOf(this.status)) this.giftMove(gift)
     if (!this.hook.stop) {
-      this.moveHook(gift)
+      this.moveHook(gift || collideGift)
       switch (this.status) {
-        case STATUS.OPEN:
-          this.open()
-          break
+        // case STATUS.OPEN:
+        //   this.open()
+        //   break
         case STATUS.CATCH:
           this.catch(gift)
           break
@@ -102,45 +109,52 @@ export default class Control extends Base {
   }
 
   moveHook(gift: Gift) {
-    if (this.isContain(this.startBlock, this.point)) {
+    if (utils.isContain(this.startBlock, this.point)) {
       if (~[STATUS.START, STATUS.DROP].indexOf(this.status)) {
         this.drop(gift)
       }
-    } else if (this.isContain(this.leftBlock, this.point)) {
+    } else if (utils.isContain(this.leftBlock, this.point)) {
       this.hook.moveLeft()
-    } else if (this.isContain(this.rightBlock, this.point)) {
+    } else if (utils.isContain(this.rightBlock, this.point)) {
       this.hook.moveRight()
     }
   }
 
   drop(gift: Gift) {
     this.status = STATUS.DROP
-    this.hook.drop(() => {
-      this.status = STATUS.OPEN
-    }, gift)
-  }
-
-  open() {
-    this.hook.open(() => {
+    if (this.hook.y > 800) {
+      this.open()
+    }
+    this.hook.drop(gift, () => {
       this.status = STATUS.CATCH
       this.stop(1000)
     })
   }
 
-  catch(gift: Gift) {
-    gift && gift.move()
+  open() {
+    this.hook.open(() => {
 
+    })
+  }
+
+  canCatch: boolean = false
+  catch(gift: Gift) {
+    this.giftMove(gift)
     this.hook.catch(() => {
       this.status = STATUS.DRAG
+      this.canCatch = gift && Math.random() > gift.rate
       this.stop(1000)
     })
   }
 
+  cantCatch: boolean = false
   drag(gift: Gift) {
-    gift && gift.move()
-    // if (this.hook.y < 1000) {
-    //   this.hook.resetAngle()
-    // }
+    if (gift) {
+      if (this.hook.y > 500 && Math.random() * Math.random() > 0.75) this.cantCatch = true
+      if (!this.canCatch && this.cantCatch && this.hook.y < 1200) {
+        this.hook.resetAngle() && gift.reset()
+      }
+    }
     this.hook.drag(() => {
       this.status = STATUS.END
       this.stop(1000)
@@ -148,10 +162,19 @@ export default class Control extends Base {
   }
 
   reset(gift: Gift) {
-    gift && gift.destroy()
     this.hook.reset(() => {
+      gift ? this.success(gift) : this.fail()
       this.status = STATUS.READY
     })
+  }
+
+  giftMove(gift: Gift) {
+    if (!gift) return
+    if (gift.resetting) {
+      gift.reset()
+    } else {
+      gift.move()
+    }
   }
 
   stop(times: number = 500) {
@@ -159,6 +182,15 @@ export default class Control extends Base {
     setTimeout(() => {
       this.hook.stop = false
     }, times)
+  }
+
+  fail() {
+
+  }
+
+  success(gift: Gift) {
+    gift && gift.destroy()
+    console.log('success', gift)
   }
 
 }

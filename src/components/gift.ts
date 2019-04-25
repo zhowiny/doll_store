@@ -9,6 +9,7 @@ interface Position {
 
 import Base from "./base";
 import Hook from "./hook";
+import { utils } from "../utils";
 
 
 export default class Gift extends Base {
@@ -21,6 +22,11 @@ export default class Gift extends Base {
   Xarrived: boolean = false
   angle: number = 0
   isDead: boolean = false
+  collide: boolean = false
+  rate: number = 0.5
+  resetting: boolean = false
+  maxAngle: number = Math.floor(Math.random() * 30)
+
 
   constructor(public position: Position, public hook: Hook) {
     super()
@@ -36,7 +42,9 @@ export default class Gift extends Base {
       width: this.hook.width,
       height: this.hook.height,
     }
-    this.isTarget = (this.calcArea(this.position, hook))
+
+    this.collide = utils.calcArea(this.position, hook) > 0.2
+    this.isTarget = utils.calcArea(this.position, hook) > 0.65 || this.isTarget
 
     this.context.beginPath()
     this.context.save()
@@ -57,6 +65,7 @@ export default class Gift extends Base {
   }
 
   move() {
+    if (this.resetting) return
 
     this.horizontalMove()
     this.verticalMove()
@@ -76,21 +85,14 @@ export default class Gift extends Base {
       return
     }
 
-    g.x === x && (this.Xarrived = true)
-
     if (g.x < x) {
-      g.x += 2
-      if (g.x > x) {
-        g.x = x
-        this.Xarrived = true
-      }
+      g.x += 5
+      g.x = Math.min(g.x, x)
     } else {
-      g.x -= 2
-      if (g.x < x) {
-        g.x = x
-        this.Xarrived = true
-      }
+      g.x -= 5
+      g.x = Math.max(g.x, x)
     }
+    g.x === x && (this.Xarrived = true)
   }
 
   verticalMove() {
@@ -103,24 +105,17 @@ export default class Gift extends Base {
       g.y = y
       return
     }
-    g.y === y && (this.Yarrived = true)
 
     if (g.y > y) {
       g.y -= 2
-      if (g.y < y) {
-        g.y = y
-        this.Yarrived = true
-      }
+      g.y = Math.max(g.y, y)
     } else {
       g.y += 2
-      if (g.y > y) {
-        g.y = y
-        this.Yarrived = true
-      }
+      g.y = Math.min(g.y, y)
     }
+    g.y === y && (this.Yarrived = true)
   }
 
-  maxAngle: number = Math.floor(Math.random() * 30)
   rotate() {
     let condition = 1
 
@@ -131,6 +126,56 @@ export default class Gift extends Base {
     if (Math.abs(this.angle) < this.maxAngle) {
       this.angle = (Math.abs(this.angle) + 1) * condition
     }
+  }
+
+  reset() {
+    this.resetting = true
+    let xArrived = this.resetHorizonal()
+    let yArrived = this.resetVertical()
+    let angleArrived = this.resetAngle()
+    if (xArrived && yArrived) {
+      this.resetting = false
+      this.isTarget = false
+      this.Xarrived = false
+      this.Yarrived = false
+      this.angle = this.angle % 360
+    }
+  }
+
+  resetHorizonal() {
+    let g = this.position
+    let i = this.initialPosition
+
+    if (g.x === i.x) return true
+    if (g.x < i.x) {
+      g.x += 2
+      g.x = Math.min(g.x, i.x)
+    } else {
+      g.x -= 2
+      g.x = Math.max(g.x, i.x)
+    }
+  }
+  resetVertical() {
+    let g = this.position
+    let i = this.initialPosition
+
+    if (g.y === i.y) return true
+    if (g.y < i.y) {
+      g.y += 20
+      g.y = Math.min(g.y, i.y)
+    } else {
+      g.y -= 20
+      g.y = Math.max(g.y, i.y)
+    }
+  }
+  resetAngle() {
+    let angle = Math.abs(this.angle)
+    let condition = this.angle / angle
+    if (Math.abs(angle % 360) === this.maxAngle && angle / 360 > 3) return true
+
+    angle += (Math.random() * 15 + 5)
+    angle = Math.min(angle, 360 * 3 + this.maxAngle)
+    this.angle = angle * condition
   }
 
   destroy() {
