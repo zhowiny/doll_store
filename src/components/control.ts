@@ -78,6 +78,8 @@ export default class Control extends Base {
 
   update(t: number = 0) {
     // console.log(t)
+
+    // todo 某些情况gift取值错误
     const temp = this.gifts.filter(g => g.isTarget)
     const gift: Gift = temp[temp.length - 1]
     const collideGift = this.gifts.filter(g => g.collide).reverse()[0]

@@ -130,8 +130,8 @@ export default class Gift extends Base {
 
   reset() {
     this.resetting = true
-    let xArrived = this.resetHorizonal()
-    let yArrived = this.resetVertical()
+    let xArrived = this.resetHorizonal(this.initialPosition.x)
+    let yArrived = this.resetVertical(this.initialPosition.y)
     let angleArrived = this.resetAngle()
     if (xArrived && yArrived) {
       this.resetting = false
@@ -142,30 +142,28 @@ export default class Gift extends Base {
     }
   }
 
-  resetHorizonal() {
+  resetHorizonal(x: number) {
     let g = this.position
-    let i = this.initialPosition
 
-    if (g.x === i.x) return true
-    if (g.x < i.x) {
+    if (g.x === x) return true
+    if (g.x < x) {
       g.x += 2
-      g.x = Math.min(g.x, i.x)
+      g.x = Math.min(g.x, x)
     } else {
       g.x -= 2
-      g.x = Math.max(g.x, i.x)
+      g.x = Math.max(g.x, x)
     }
   }
-  resetVertical() {
+  resetVertical(y: number) {
     let g = this.position
-    let i = this.initialPosition
 
-    if (g.y === i.y) return true
-    if (g.y < i.y) {
+    if (g.y === y) return true
+    if (g.y < y) {
       g.y += 20
-      g.y = Math.min(g.y, i.y)
+      g.y = Math.min(g.y, y)
     } else {
       g.y -= 20
-      g.y = Math.max(g.y, i.y)
+      g.y = Math.max(g.y, y)
     }
   }
   resetAngle() {
