@@ -49,6 +49,9 @@ export default class Control extends Base {
   aniId: number = 0
   point: any = null
   status: string = STATUS.READY
+  gift: Gift | undefined = undefined
+  count: number = 0
+  maxCount: number = 20 // 每n次必中一次
 
   constructor(public hook: Hook, public gifts: Gift[]) {
     super()
@@ -85,10 +88,11 @@ export default class Control extends Base {
     const collideGift = this.gifts.filter(g => g.collide).reverse()[0]
     this.gifts = this.gifts.filter(g => !g.isDead)
 
+    this.gift = gift
 
     const ignoreStatus = [STATUS.DRAG, STATUS.END]
     // console.log(gift)
-    if (~ignoreStatus.indexOf(this.status)) this.giftMove(gift)
+    if (~ignoreStatus.indexOf(this.status)) this.giftMove()
     if (!this.hook.stop) {
       this.moveHook(gift || collideGift)
       switch (this.status) {
@@ -96,13 +100,13 @@ export default class Control extends Base {
         //   this.open()
         //   break
         case STATUS.CATCH:
-          this.catch(gift)
+          this.catch()
           break
         case STATUS.DRAG:
-          this.drag(gift)
+          this.drag()
           break
         case STATUS.END:
-          this.reset(gift)
+          this.reset()
           break
         default:
           break
@@ -134,50 +138,73 @@ export default class Control extends Base {
   }
 
   open() {
-    this.hook.open(() => {
-
-    })
+    this.hook.open()
   }
 
   canCatch: boolean = false
-  catch(gift: Gift) {
-    this.giftMove(gift)
+  catch() {
     this.hook.catch(() => {
       this.status = STATUS.DRAG
-      this.canCatch = gift && Math.random() > gift.rate
+      this.count++
+      if (this.count === this.maxCount) {
+        this.canCatch = true
+      } else {
+        this.canCatch = !!this.gift && Math.random() > 1 - this.gift.rate
+      }
+      this.canCatch && (this.count = 0)
+      console.log(this.canCatch)
       this.stop(1000)
     })
+    this.giftMove()
   }
 
-  cantCatch: boolean = false
-  drag(gift: Gift) {
-    if (gift) {
-      if (this.hook.y > 500 && Math.random() * Math.random() > 0.75) this.cantCatch = true
-      if (!this.canCatch && this.cantCatch && this.hook.y < 1200) {
-        this.hook.resetAngle() && gift.reset()
-      }
-    }
+  drag() {
+    // this.randomDrop('drag')
     this.hook.drag(() => {
       this.status = STATUS.END
+      !this.canCatch && this.gift && this.gift.reset()
       this.stop(1000)
     })
   }
 
-  reset(gift: Gift) {
+  reset() {
+    // this.randomDrop('reset')
     this.hook.reset(() => {
-      gift ? this.success(gift) : this.fail()
+      if (this.gift) {
+        this.success()
+      } else {
+        this.fail()
+      }
       this.status = STATUS.READY
+      // this.cantCatch = false
     })
   }
 
-  giftMove(gift: Gift) {
-    if (!gift) return
-    if (gift.resetting) {
-      gift.reset()
-    } else {
-      gift.move()
-    }
+  giftMove() {
+    if (!this.gift) return
+    this.gift.move(() => {
+      // this.cantCatch = false
+    })
   }
+
+  // cantCatch: boolean = false
+  // randomDrop(status: string) {
+  //   if (this.gift && !this.gift.resetting) {
+  //     // if (status === 'drag' && this.hook.y > 800 && Math.random() > 0.995) {
+  //     //   this.cantCatch = true
+  //     // }
+  //     // if (status === 'reset' && this.hook.x > 400 && Math.random() > 0.95) {
+  //     //   this.cantCatch = true
+  //     // }
+  //     if (this.hook.x < 400 && this.hook.y < 800) {
+  //       console.log(this.hook)
+  //       this.cantCatch = true
+  //     }
+  //     if (!this.canCatch && this.cantCatch) {
+  //       this.hook.resetAngle() && this.gift.reset()
+  //     }
+  //   }
+  // }
 
   stop(times: number = 500) {
     this.hook.stop = true
@@ -190,9 +217,9 @@ export default class Control extends Base {
 
   }
 
-  success(gift: Gift) {
-    gift && gift.destroy()
-    console.log('success', gift)
+  success() {
+    this.gift && this.gift.destroy()
+    console.log('success', this.gift)
   }
 
 }

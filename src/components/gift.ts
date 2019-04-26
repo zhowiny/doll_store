@@ -23,7 +23,7 @@ export default class Gift extends Base {
   angle: number = 0
   isDead: boolean = false
   collide: boolean = false
-  rate: number = 0.5
+  rate: number = 0.2
   resetting: boolean = false
   maxAngle: number = Math.floor(Math.random() * 30)
 
@@ -64,12 +64,14 @@ export default class Gift extends Base {
     this.context.restore()
   }
 
-  move() {
-    if (this.resetting) return
-
-    this.horizontalMove()
-    this.verticalMove()
-    this.rotate()
+  move(fn?: () => void) {
+    if (this.resetting) {
+      this.reset(fn)
+    } else {
+      this.horizontalMove()
+      this.verticalMove()
+      this.rotate()
+    }
     // this.draw()
 
   }
@@ -128,51 +130,54 @@ export default class Gift extends Base {
     }
   }
 
-  reset() {
+  reset(fn?: () => void) {
     this.resetting = true
     let xArrived = this.resetHorizonal(this.initialPosition.x)
     let yArrived = this.resetVertical(this.initialPosition.y)
-    let angleArrived = this.resetAngle()
     if (xArrived && yArrived) {
       this.resetting = false
       this.isTarget = false
       this.Xarrived = false
       this.Yarrived = false
-      this.angle = this.angle % 360
+      Math.abs(this.angle) > 360 && (this.angle = this.angle % 360)
+      fn && fn()
     }
+    this.randomAngle()
   }
 
   resetHorizonal(x: number) {
     let g = this.position
+    let speed = 2
+    if (Math.abs(x - g.x) > 10) speed = 10
 
-    if (g.x === x) return true
     if (g.x < x) {
-      g.x += 2
+      g.x += speed
       g.x = Math.min(g.x, x)
     } else {
-      g.x -= 2
+      g.x -= speed
       g.x = Math.max(g.x, x)
     }
+    return g.x === x
   }
   resetVertical(y: number) {
     let g = this.position
 
-    if (g.y === y) return true
     if (g.y < y) {
-      g.y += 20
+      g.y += 35
       g.y = Math.min(g.y, y)
     } else {
-      g.y -= 20
+      g.y -= 35
       g.y = Math.max(g.y, y)
     }
+    return g.y === y
   }
-  resetAngle() {
+  randomAngle() {
+    if (!this.resetting) return
     let angle = Math.abs(this.angle)
     let condition = this.angle / angle
-    if (Math.abs(angle % 360) === this.maxAngle && angle / 360 > 3) return true
+    let speed = 20
 
-    angle += (Math.random() * 15 + 5)
-    angle = Math.min(angle, 360 * 3 + this.maxAngle)
+    angle += (Math.random() * speed + (speed - 15))
     this.angle = angle * condition
   }
 
