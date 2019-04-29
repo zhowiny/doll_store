@@ -58,7 +58,7 @@ export default class Control extends Base {
     this.addEvent()
   }
 
-  addEvent() {
+  addEvent(): void {
     const operationalState = [STATUS.READY, STATUS.START]
     this.canvas.addEventListener('touchstart', e => {
       const point = e.touches[0]
@@ -79,26 +79,21 @@ export default class Control extends Base {
 
   }
 
-  update(t: number = 0) {
+  update(t: number = 0): void {
     // console.log(t)
 
-    // todo 某些情况gift取值错误
     const temp = this.gifts.filter(g => g.isTarget)
-    const gift: Gift = temp[temp.length - 1]
-    const collideGift = this.gifts.filter(g => g.collide).reverse()[0]
+    this.gift = temp.reduce((pre, next) => pre.collideArea > next.collideArea ? pre : next, temp[0])
+    const collideGift: Gift = this.gifts.filter(g => g.collide).reverse()[0]
     this.gifts = this.gifts.filter(g => !g.isDead)
 
-    this.gift = gift
 
-    const ignoreStatus = [STATUS.DRAG, STATUS.END]
+    const ignoreStatus = [STATUS.DRAG, STATUS.END, STATUS.READY]
     // console.log(gift)
     if (~ignoreStatus.indexOf(this.status)) this.giftMove()
     if (!this.hook.stop) {
-      this.moveHook(gift || collideGift)
+      this.moveHook(this.gift || collideGift)
       switch (this.status) {
-        // case STATUS.OPEN:
-        //   this.open()
-        //   break
         case STATUS.CATCH:
           this.catch()
           break
@@ -114,7 +109,7 @@ export default class Control extends Base {
     }
   }
 
-  moveHook(gift: Gift) {
+  moveHook(gift: Gift): void {
     if (utils.isContain(this.startBlock, this.point)) {
       if (~[STATUS.START, STATUS.DROP].indexOf(this.status)) {
         this.drop(gift)
@@ -126,7 +121,7 @@ export default class Control extends Base {
     }
   }
 
-  drop(gift: Gift) {
+  drop(gift: Gift): void {
     this.status = STATUS.DROP
     if (this.hook.y > 800) {
       this.open()
@@ -137,12 +132,12 @@ export default class Control extends Base {
     })
   }
 
-  open() {
+  open(): void {
     this.hook.open()
   }
 
   canCatch: boolean = false
-  catch() {
+  catch(): void {
     this.hook.catch(() => {
       this.status = STATUS.DRAG
       this.count++
@@ -158,8 +153,7 @@ export default class Control extends Base {
     this.giftMove()
   }
 
-  drag() {
-    // this.randomDrop('drag')
+  drag(): void {
     this.hook.drag(() => {
       this.status = STATUS.END
       !this.canCatch && this.gift && this.gift.reset()
@@ -167,8 +161,7 @@ export default class Control extends Base {
     })
   }
 
-  reset() {
-    // this.randomDrop('reset')
+  reset(): void {
     this.hook.reset(() => {
       if (this.gift) {
         this.success()
@@ -176,14 +169,12 @@ export default class Control extends Base {
         this.fail()
       }
       this.status = STATUS.READY
-      // this.cantCatch = false
     })
   }
 
-  giftMove() {
+  giftMove(): void {
     if (!this.gift) return
     this.gift.move(() => {
-      // this.cantCatch = false
     })
   }
 
@@ -206,18 +197,18 @@ export default class Control extends Base {
   //   }
   // }
 
-  stop(times: number = 500) {
+  stop(times: number = 500): void {
     this.hook.stop = true
     setTimeout(() => {
       this.hook.stop = false
     }, times)
   }
 
-  fail() {
+  fail(): void {
 
   }
 
-  success() {
+  success(): void {
     this.gift && this.gift.destroy()
     console.log('success', this.gift)
   }

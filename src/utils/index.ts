@@ -32,7 +32,7 @@ class Util {
   }
 
 
-  isContain(rect: Rect, point: { pageX: number, pageY: number }) {
+  isContain(rect: Rect, point: { pageX: number, pageY: number }): boolean {
     if (!rect || !point) return false
     const p = {
       x: point.pageX * this.ratio,
@@ -47,10 +47,10 @@ class Util {
       p.y < rect.y + rect.height
   }
 
-  isCollide(A: Rect, B: Rect) {
+  isCollide(A: Rect, B: Rect): boolean {
     return A.x + A.width > B.x && A.x < B.x + B.width && A.y + A.height > B.y && A.y < B.y + B.height
   }
-  calcArea(A: Rect, B: Rect) {
+  calcArea(A: Rect, B: Rect): number {
     if (!this.isCollide(A, B)) return 0
     let width = Math.min(A.x + A.width, B.x + B.width) - Math.max(A.x, B.x)
     let height = Math.min(A.y + A.height, B.y + B.height) - Math.max(A.y, B.y)

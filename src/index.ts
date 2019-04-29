@@ -22,7 +22,7 @@ export default class Game extends Base {
     this.createCanvas(id)
   }
 
-  async init() {
+  async init(): Promise<any> {
 
     // 加载所有图片资源
     this.resource = await utils.loadImage(images)
@@ -39,7 +39,7 @@ export default class Game extends Base {
   }
 
 
-  render(t?: number) {
+  render(t?: number): void {
     // this.gifts = this.gifts.filter(g => !g.isDead)
     this.clear()
     // this.bg.draw()
@@ -54,7 +54,7 @@ export default class Game extends Base {
   }
 
   // todo 有待优化
-  generateGift(hook: Hook) {
+  generateGift(hook: Hook): Gift[] {
     let size: number = 60 * this.ratio
     let gifts: Gift[] = []
     let history: Gift[] = []
@@ -109,11 +109,11 @@ export default class Game extends Base {
     })
     return gifts
   }
-  saveStorage(gifts: any[]) {
+  saveStorage(gifts: any[]): void {
     localStorage.setItem('gifts', JSON.stringify(gifts))
   }
 
-  clear() {
+  clear(): void {
     const ctx = <CanvasRenderingContext2D>this.context
     const canvas = <HTMLCanvasElement>this.canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height)

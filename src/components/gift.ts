@@ -26,6 +26,7 @@ export default class Gift extends Base {
   rate: number = 0.2
   resetting: boolean = false
   maxAngle: number = Math.floor(Math.random() * 30)
+  collideArea: number = 0
 
 
   constructor(public position: Position, public hook: Hook) {
@@ -33,7 +34,7 @@ export default class Gift extends Base {
     this.initialPosition = Object.assign({}, this.position)
   }
 
-  draw() {
+  draw(): void {
     if (this.isDead) return
 
     let hook = {
@@ -43,8 +44,9 @@ export default class Gift extends Base {
       height: this.hook.height,
     }
 
-    this.collide = utils.calcArea(this.position, hook) > 0.2
-    this.isTarget = utils.calcArea(this.position, hook) > 0.65 || this.isTarget
+    this.collideArea = utils.calcArea(this.position, hook)
+    this.collide = this.collideArea > 0.2
+    this.isTarget = this.collideArea > 0.65 || this.isTarget
 
     this.context.beginPath()
     this.context.save()
@@ -64,7 +66,7 @@ export default class Gift extends Base {
     this.context.restore()
   }
 
-  move(fn?: () => void) {
+  move(fn?: () => void): void {
     if (this.resetting) {
       this.reset(fn)
     } else {
@@ -76,7 +78,7 @@ export default class Gift extends Base {
 
   }
 
-  horizontalMove() {
+  horizontalMove(): void {
     let g = this.position
     let h = this.hook
     let i = this.initialPosition
@@ -97,7 +99,7 @@ export default class Gift extends Base {
     g.x === x && (this.Xarrived = true)
   }
 
-  verticalMove() {
+  verticalMove(): void {
     let g = this.position
     let h = this.hook
     let i = this.initialPosition
@@ -118,7 +120,7 @@ export default class Gift extends Base {
     g.y === y && (this.Yarrived = true)
   }
 
-  rotate() {
+  rotate(): void {
     let condition = 1
 
     if (this.hook.x + this.hook.width / 2 > this.initialPosition.x + this.initialPosition.width / 2) {
@@ -130,7 +132,7 @@ export default class Gift extends Base {
     }
   }
 
-  reset(fn?: () => void) {
+  reset(fn?: () => void): void {
     this.resetting = true
     let xArrived = this.resetHorizonal(this.initialPosition.x)
     let yArrived = this.resetVertical(this.initialPosition.y)
@@ -145,7 +147,7 @@ export default class Gift extends Base {
     this.randomAngle()
   }
 
-  resetHorizonal(x: number) {
+  resetHorizonal(x: number): boolean {
     let g = this.position
     let speed = 2
     if (Math.abs(x - g.x) > 10) speed = 10
@@ -159,7 +161,7 @@ export default class Gift extends Base {
     }
     return g.x === x
   }
-  resetVertical(y: number) {
+  resetVertical(y: number): boolean {
     let g = this.position
 
     if (g.y < y) {
@@ -171,7 +173,7 @@ export default class Gift extends Base {
     }
     return g.y === y
   }
-  randomAngle() {
+  randomAngle(): void {
     if (!this.resetting) return
     let angle = Math.abs(this.angle)
     let condition = this.angle / angle
@@ -181,7 +183,7 @@ export default class Gift extends Base {
     this.angle = angle * condition
   }
 
-  destroy() {
+  destroy(): void {
     this.isDead = true
   }
 }

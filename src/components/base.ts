@@ -16,7 +16,7 @@ export default class Base {
     }
   }
 
-  createCanvas(id: string) {
+  createCanvas(id: string): void {
     let canvas: HTMLCanvasElement | null = document.querySelector(id)
     if (!canvas) {
       canvas = document.createElement('canvas')
@@ -35,7 +35,7 @@ export default class Base {
     window.canvas = canvas
   }
 
-  roundedRect(x: number = 0, y: number = 0, width: number, height: number, radius: number) {
+  roundedRect(x: number = 0, y: number = 0, width: number, height: number, radius: number): void {
     let ctx = <CanvasRenderingContext2D>this.context
     ctx.save()
     ctx.beginPath()

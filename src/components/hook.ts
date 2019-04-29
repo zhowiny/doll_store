@@ -17,11 +17,11 @@ export default class Hook extends Base {
   constructor(public img: HTMLImageElement) {
     super()
   }
-  draw() {
+  draw(): void {
     this.render()
   }
 
-  render() {
+  render(): void {
 
     this.drawPeople()
     this.drawPeople('right')
@@ -44,23 +44,23 @@ export default class Hook extends Base {
 
   }
 
-  moveLeft() {
+  moveLeft(): void {
     this.x -= this.speed
     this.x = Math.max(0, this.x)
   }
-  moveRight() {
+  moveRight(): void {
     const canvas = <HTMLCanvasElement>this.canvas
     this.x += this.speed
     this.x = Math.min(this.x, canvas.width - 45 * this.ratio - this.startX)
   }
-  open(fn?: Function) {
+  open(fn?: Function): void {
     this.angle += 0.5
     this.angle = Math.min(this.angle, 15)
     if (this.angle === 15) {
       fn && fn()
     }
   }
-  catch(fn?: Function) {
+  catch(fn?: Function): void {
     this.angle -= 1.5
     this.angle = Math.max(this.angle, -10)
     if (this.angle === -10) {
@@ -68,7 +68,7 @@ export default class Hook extends Base {
       fn && fn()
     }
   }
-  drop(gift?: Gift, fn?: Function) {
+  drop(gift?: Gift, fn?: Function): void {
     const canvas = <HTMLCanvasElement>this.canvas
     let bound = canvas.height - this.height - this.startY + 80
     if (gift) {
@@ -81,7 +81,7 @@ export default class Hook extends Base {
       fn && fn()
     }
   }
-  drag(fn?: Function) {
+  drag(fn?: Function): void {
     this.y -= 5 * this.ratio
     this.y = Math.max(this.y, 0)
     if (this.y === 0) {
@@ -89,29 +89,29 @@ export default class Hook extends Base {
     }
   }
 
-  reset(fn?: Function) {
+  reset(fn?: Function): void {
     if (this.resetX() && this.resetY() && this.resetAngle()) {
       fn && fn()
     }
   }
 
-  resetX() {
+  resetX(): boolean {
     this.x -= 3 * this.ratio
     this.x = Math.max(0, this.x)
     return this.x === 0
   }
-  resetY() {
+  resetY(): boolean {
     this.y -= 5 * this.ratio
     this.y = Math.max(this.y, 0)
     return this.y === 0
   }
-  resetAngle() {
+  resetAngle(): boolean {
     this.angle += 0.3
     this.angle = Math.min(this.angle, 0)
     return this.angle === 0
   }
 
-  drawPeople(position: string = 'left') {
+  drawPeople(position: string = 'left'): void {
     const canvas = <HTMLCanvasElement>this.canvas
     const ctx = <CanvasRenderingContext2D>this.context
     const size = 30 * this.ratio
@@ -129,7 +129,7 @@ export default class Hook extends Base {
     ctx.drawImage(this.img, -size / 2, - size / 2, size, size)
     ctx.restore()
   }
-  drawClaw(position: string = 'left') {
+  drawClaw(position: string = 'left'): void {
     const ctx = <CanvasRenderingContext2D>this.context
     let condition = -1
     let x = this.startX + this.x + 10 * this.ratio
@@ -153,7 +153,7 @@ export default class Hook extends Base {
     ctx.fill()
     ctx.restore()
   }
-  drawLine() {
+  drawLine(): void {
     const canvas = <HTMLCanvasElement>this.canvas
     const ctx = <CanvasRenderingContext2D>this.context
     const ratio = this.ratio
@@ -167,7 +167,7 @@ export default class Hook extends Base {
     ctx.stroke()
     ctx.restore()
   }
-  drawRope() {
+  drawRope(): void {
     const ctx = <CanvasRenderingContext2D>this.context
     let x = this.startX + this.x - 45 * this.ratio
     let y = this.startY + this.y - 15 * this.ratio

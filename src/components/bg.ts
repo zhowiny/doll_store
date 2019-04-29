@@ -21,10 +21,10 @@ export default class Background extends Base {
       img: img,
     }
   }
-  draw() {
+  draw(): void {
     this.drawBg()
   }
-  drawBg() {
+  drawBg(): void {
     const position = <Position>this.position
     const ctx = <CanvasRenderingContext2D>this.context
     const canvas = <HTMLCanvasElement>this.canvas
