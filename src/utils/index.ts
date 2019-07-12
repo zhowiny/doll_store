@@ -1,15 +1,6 @@
-
-interface Rect {
-  x: number
-  y: number
-  width: number
-  height: number
-  [prop: string]: any
-}
-
 class Util {
   readonly ratio: number = 4
-  async loadImage(images: Array<any>) {
+  async loadImage(images: GiftImage[]): Promise<Resource> {
     let promises = images.map(item => {
       return new Promise((resolve: any, reject: any) => {
         const img = new Image()
@@ -22,7 +13,7 @@ class Util {
         }
       })
     })
-    let resources: any = {}
+    let resources: Resource = {}
     await Promise.all(promises).then(result => {
       result.forEach((r: any) => {
         resources[r.name] = r.img
@@ -34,7 +25,7 @@ class Util {
 
   isContain(rect: Rect, point: { pageX: number, pageY: number }): boolean {
     if (!rect || !point) return false
-    const p = {
+    const p: Rect = {
       x: point.pageX * this.ratio,
       y: point.pageY * this.ratio,
       width: rect.width,

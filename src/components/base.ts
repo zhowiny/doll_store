@@ -5,14 +5,14 @@ declare global {
 }
 
 export default class Base {
-  canvas: HTMLCanvasElement | null = null
-  context: CanvasRenderingContext2D | null = null
+  canvas!: HTMLCanvasElement
+  context!: CanvasRenderingContext2D;
   readonly ratio: number = 4
 
   constructor() {
     if (window.canvas) {
       this.canvas = window.canvas
-      this.context = this.canvas.getContext('2d')
+      this.context = <CanvasRenderingContext2D>this.canvas.getContext('2d')
     }
   }
 
@@ -31,7 +31,7 @@ export default class Base {
     canvas.style.width = `${w}px`
     canvas.style.height = `${h}px`
     this.canvas = canvas
-    this.context = canvas.getContext('2d')
+    this.context = <CanvasRenderingContext2D>canvas.getContext('2d')
     window.canvas = canvas
   }
 

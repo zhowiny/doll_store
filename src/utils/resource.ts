@@ -1,5 +1,3 @@
-declare function require(path: string): any
-
 export default [
   {
     name: 'bg',

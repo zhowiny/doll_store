@@ -53,14 +53,14 @@ export default class Hook extends Base {
     this.x += this.speed
     this.x = Math.min(this.x, canvas.width - 45 * this.ratio - this.startX)
   }
-  open(fn?: Function): void {
+  open(fn?: () => void): void {
     this.angle += 0.5
     this.angle = Math.min(this.angle, 15)
     if (this.angle === 15) {
       fn && fn()
     }
   }
-  catch(fn?: Function): void {
+  catch(fn?: () => void): void {
     this.angle -= 1.5
     this.angle = Math.max(this.angle, -10)
     if (this.angle === -10) {
