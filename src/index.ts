@@ -45,7 +45,7 @@ export default class Game extends Base {
   render(t?: number): void {
     // this.gifts = this.gifts.filter(g => !g.isDead)
     this.clear()
-    // this.bg.draw()
+    this.bg.draw()
     this.gifts.forEach(item => item.draw())
     this.hook.draw()
 
