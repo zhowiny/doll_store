@@ -7,9 +7,6 @@ import Control from './components/control'
 import Gift from './components/gift'
 import GiftGenerate from './utils/generate'
 
-export async function asd() {
-
-}
 
 export default class Game extends Base {
   resource!: Resource
@@ -26,6 +23,7 @@ export default class Game extends Base {
 
   async init(): Promise<any> {
 
+    console.log(process.env)
     const generate = new GiftGenerate()
     // 加载所有图片资源
     this.resource = await generate.loadImage()

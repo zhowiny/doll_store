@@ -1,8 +1,8 @@
 module.exports = {
   dev: {
-    host: '192.168.1.10',
+    host: '127.0.0.1',
     port: '8080',
-    autoOpenBower: true,
+    // autoOpenBower: true,
     overlay: true,
     publicPath: '/',
     proxyTable: {},
